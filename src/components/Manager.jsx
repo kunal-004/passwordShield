@@ -91,6 +91,30 @@ const Manager = () => {
     navigator.clipboard.writeText(text);
   };
 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value.toLowerCase());
+  };
+
+  const highlightText = (text, query) => {
+    if (!query) return text;
+    const parts = text.split(new RegExp(`(${query})`, "gi"));
+    return (
+      <>
+        {parts.map((part, index) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <span key={index} className="bg-green-200 text-green-900">
+              {part}
+            </span>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  };
+
   return (
     <>
       <ToastContainer
@@ -213,7 +237,9 @@ const Manager = () => {
                     type="text"
                     id="table-search"
                     className="block w-full py-2 pl-10 pr-3 text-sm text-white border border-green-300 rounded-lg  focus:ring-green-500 focus:border-green-500 dark:bg-gray-800"
-                    placeholder="Search for items..."
+                    placeholder="Search for site..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
                   />
                 </div>
               </div>
@@ -236,96 +262,100 @@ const Manager = () => {
                     </tr>
                   </thead>
                   <tbody className="text-green-900">
-                    {passwordsArray.map((item, index) => {
-                      return (
-                        <tr key={index}>
-                          <td className="py-2 border border-white text-center relative">
-                            <div className="flex items-center justify-center">
-                              <a
-                                href={item.site}
-                                target="_blank"
-                                className="truncate text-green-200 hover:text-green-700 font-semibold underline decoration-dotted decoration-green-500 hover:decoration-wavy transition-all duration-200"
-                              >
-                                {item.site}
-                              </a>
-                            </div>
-                          </td>
+                    {passwordsArray
+                      .filter((item) =>
+                        item.site.toLowerCase().includes(searchTerm)
+                      )
+                      .map((item, index) => {
+                        return (
+                          <tr key={index}>
+                            <td className="py-2 border border-white text-center relative">
+                              <div className="flex items-center justify-center">
+                                <a
+                                  href={item.site}
+                                  target="_blank"
+                                  className="truncate text-green-200 hover:text-green-700 font-semibold underline decoration-dotted decoration-green-500 hover:decoration-wavy transition-all duration-200"
+                                >
+                                  {highlightText(item.site, searchTerm)}
+                                </a>
+                              </div>
+                            </td>
 
-                          <td className="py-2 border border-white text-center relative">
-                            <div className="flex flex-wrap md:flex-nowrap  items-center justify-center">
-                              <span>{item.username}</span>
+                            <td className="py-2 border border-white text-center relative">
+                              <div className="flex flex-wrap md:flex-nowrap  items-center justify-center">
+                                <span>{item.username}</span>
 
-                              <div
-                                className="absolute right-0 pr-2 cursor-pointer hidden sm:block"
+                                <div
+                                  className="absolute right-0 pr-2 cursor-pointer hidden sm:block"
+                                  onClick={() => {
+                                    copyText(item.username);
+                                  }}
+                                >
+                                  <lord-icon
+                                    style={{
+                                      width: "25px",
+                                      height: "25px",
+                                    }}
+                                    src="https://cdn.lordicon.com/iykgtsbt.json"
+                                    trigger="hover"
+                                  ></lord-icon>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="py-2 border border-white text-center relative ">
+                              <div className="flex flex-wrap md:flex-nowrap items-center justify-center">
+                                <span className="truncate w-full md:w-auto">
+                                  {item.password}
+                                </span>
+
+                                <div
+                                  className="absolute right-0 pr-2 cursor-pointer hidden sm:block"
+                                  onClick={() => {
+                                    copyText(item.password);
+                                  }}
+                                >
+                                  <lord-icon
+                                    style={{
+                                      width: "25px",
+                                      height: "25px",
+                                    }}
+                                    src="https://cdn.lordicon.com/iykgtsbt.json"
+                                    trigger="hover"
+                                  ></lord-icon>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="justify-center py-2 border border-white text-center">
+                              <span
+                                className="cursor-pointer mx-1"
                                 onClick={() => {
-                                  copyText(item.username);
+                                  editPassword(item.id);
                                 }}
                               >
                                 <lord-icon
-                                  style={{
-                                    width: "25px",
-                                    height: "25px",
-                                  }}
-                                  src="https://cdn.lordicon.com/iykgtsbt.json"
+                                  src="https://cdn.lordicon.com/gwlusjdu.json"
                                   trigger="hover"
+                                  style={{ width: "25px", height: "25px" }}
                                 ></lord-icon>
-                              </div>
-                            </div>
-                          </td>
-
-                          <td className="py-2 border border-white text-center relative ">
-                            <div className="flex flex-wrap md:flex-nowrap items-center justify-center">
-                              <span className="truncate w-full md:w-auto">
-                                {item.password}
                               </span>
-
-                              <div
-                                className="absolute right-0 pr-2 cursor-pointer hidden sm:block"
+                              <span
+                                className="cursor-pointer mx-1"
                                 onClick={() => {
-                                  copyText(item.password);
+                                  deletePassword(item.id);
                                 }}
                               >
                                 <lord-icon
-                                  style={{
-                                    width: "25px",
-                                    height: "25px",
-                                  }}
-                                  src="https://cdn.lordicon.com/iykgtsbt.json"
+                                  src="https://cdn.lordicon.com/skkahier.json"
                                   trigger="hover"
+                                  style={{ width: "25px", height: "25px" }}
                                 ></lord-icon>
-                              </div>
-                            </div>
-                          </td>
-
-                          <td className="justify-center py-2 border border-white text-center">
-                            <span
-                              className="cursor-pointer mx-1"
-                              onClick={() => {
-                                editPassword(item.id);
-                              }}
-                            >
-                              <lord-icon
-                                src="https://cdn.lordicon.com/gwlusjdu.json"
-                                trigger="hover"
-                                style={{ width: "25px", height: "25px" }}
-                              ></lord-icon>
-                            </span>
-                            <span
-                              className="cursor-pointer mx-1"
-                              onClick={() => {
-                                deletePassword(item.id);
-                              }}
-                            >
-                              <lord-icon
-                                src="https://cdn.lordicon.com/skkahier.json"
-                                trigger="hover"
-                                style={{ width: "25px", height: "25px" }}
-                              ></lord-icon>
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
               )}
