@@ -9,8 +9,6 @@ const Footer = () => {
       <div className="flex justify-center items-center text-sm text-gray-400">
         © {new Date().getFullYear()} Created by kunal
       </div>
-
-      <div className="text-xs text-gray-300">All rights reserved.</div>
     </div>
   );
 };

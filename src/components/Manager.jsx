@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { v4 as uuidv4 } from "uuid";
 
 const Manager = () => {
   const [Inputform, setInputform] = useState({
@@ -16,12 +19,45 @@ const Manager = () => {
   }, []);
 
   const savePassword = () => {
-    localStorage.setItem(
-      "passwords",
-      JSON.stringify([...passwordsArray, Inputform])
-    );
-    console.log([...passwordsArray, Inputform]);
-    // setInputform({ site: "", username: "", password: "" });
+    if (
+      Inputform.site.length > 3 &&
+      Inputform.username.length > 3 &&
+      Inputform.password.length > 3
+    ) {
+      localStorage.setItem(
+        "passwords",
+        JSON.stringify([...passwordsArray, { ...Inputform, id: uuidv4() }])
+      );
+      console.log([...passwordsArray, { ...Inputform, id: uuidv4() }]);
+    } else {
+      toast.error("Please fill all fields properly");
+    }
+  };
+
+  const deletePassword = (id) => {
+    let cf = confirm("Do you really want to delete the password");
+    if (cf) {
+      setPasswordsArray(passwordsArray.filter((item) => item.id !== id));
+      localStorage.setItem(
+        "passwords",
+        JSON.stringify(passwordsArray.filter((item) => item.id !== id))
+      );
+    }
+  };
+
+  const editPassword = (id) => {
+    toast.info("Edit the fields above!", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+    setInputform(passwordsArray.filter((item) => item.id === id)[0]);
+    setPasswordsArray(passwordsArray.filter((item) => item.id !== id));
   };
 
   const ref = useRef();
@@ -41,12 +77,36 @@ const Manager = () => {
     setInputform({ ...Inputform, [e.target.name]: e.target.value });
   };
 
-  const copyText = () => {};
+  const copyText = (text) => {
+    toast.success("Copied to clipboard!", {
+      position: "top-center",
+      autoClose: 1000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+    navigator.clipboard.writeText(text);
+  };
 
   return (
     <>
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="relative">
-        <div className="container mx-auto bg-green-500 p-8 rounded-lg shadow-lg max-w-4xl mt-12">
+        <div className="container mx-auto bg-green-500 p-8 rounded-lg shadow-lg max-w-4xl mt-12 sm:p-6 sm:mt-10 md:p-8 md:mt-12 lg:max-w-4xl">
           <h1 className="text-white text-4xl font-bold text-center mb-4 flex items-center justify-center gap-2">
             PasswordShield
           </h1>
@@ -64,7 +124,7 @@ const Manager = () => {
             {/* Main form container with border */}
             <div className="container mx-auto bg-green-600 p-8 rounded-lg shadow-lg border-4 border-green-300  max-w-4xl mt-12 relative">
               {/* Form */}
-              <div className="text-white flex flex-col items-center space-y-6">
+              <div className="text-white flex flex-col space-y-6 items-center w-full">
                 <input
                   value={Inputform.site}
                   onChange={handelChange}
@@ -74,8 +134,8 @@ const Manager = () => {
                   placeholder="Add website URL"
                 />
 
-                <div className="flex gap-5 w-full max-w-lg">
-                  <div className="flex w-full gap-5 relative">
+                <div className="flex flex-col md:flex-row gap-5 w-full max-w-lg">
+                  <div className="flex flex-col md:flex-row w-full gap-5 relative">
                     <input
                       value={Inputform.username}
                       onChange={handelChange}
@@ -119,7 +179,7 @@ const Manager = () => {
                     trigger="hover"
                     className="group-hover: trigger"
                   ></lord-icon>
-                  Add Password
+                  Save
                 </button>
               </div>
             </div>
@@ -159,7 +219,12 @@ const Manager = () => {
               </div>
 
               <h2 className="font-bold text-2xl py-4">Your Passwords</h2>
-              {passwordsArray.length === 0 && <div> No passwords to show</div>}
+              {passwordsArray.length === 0 && (
+                <div className="flex justify-center items-center">
+                  {" "}
+                  No passwords to show
+                </div>
+              )}
               {passwordsArray.length != 0 && (
                 <table className="table-auto w-full rounded-md overflow-hidden mb-10">
                   <thead className="bg-green-800 text-white">
@@ -179,35 +244,19 @@ const Manager = () => {
                               <a
                                 href={item.site}
                                 target="_blank"
-                                className="truncate"
+                                className="truncate text-green-200 hover:text-green-700 font-semibold underline decoration-dotted decoration-green-500 hover:decoration-wavy transition-all duration-200"
                               >
                                 {item.site}
                               </a>
-
-                              <div
-                                className="absolute right-0 pr-2 cursor-pointer"
-                                onClick={() => {
-                                  copyText(item.site);
-                                }}
-                              >
-                                <lord-icon
-                                  style={{
-                                    width: "25px",
-                                    height: "25px",
-                                  }}
-                                  src="https://cdn.lordicon.com/iykgtsbt.json"
-                                  trigger="hover"
-                                ></lord-icon>
-                              </div>
                             </div>
                           </td>
 
                           <td className="py-2 border border-white text-center relative">
-                            <div className="flex items-center justify-center">
+                            <div className="flex flex-wrap md:flex-nowrap  items-center justify-center">
                               <span>{item.username}</span>
 
                               <div
-                                className="absolute right-0 pr-2 cursor-pointer"
+                                className="absolute right-0 pr-2 cursor-pointer hidden sm:block"
                                 onClick={() => {
                                   copyText(item.username);
                                 }}
@@ -224,12 +273,14 @@ const Manager = () => {
                             </div>
                           </td>
 
-                          <td className="py-2 border border-white text-center relative">
-                            <div className="flex items-center justify-center">
-                              <span>{item.password}</span>
+                          <td className="py-2 border border-white text-center relative ">
+                            <div className="flex flex-wrap md:flex-nowrap items-center justify-center">
+                              <span className="truncate w-full md:w-auto">
+                                {item.password}
+                              </span>
 
                               <div
-                                className="absolute right-0 pr-2 cursor-pointer"
+                                className="absolute right-0 pr-2 cursor-pointer hidden sm:block"
                                 onClick={() => {
                                   copyText(item.password);
                                 }}
