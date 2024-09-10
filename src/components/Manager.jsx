@@ -247,6 +247,7 @@ const Manager = () => {
               <h2 className="font-bold text-2xl py-4">Your Passwords</h2>
               {passwordsArray.length === 0 && (
                 <div className="flex justify-center items-center">
+                  {" "}
                   No passwords to show
                 </div>
               )}
