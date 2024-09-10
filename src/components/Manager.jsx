@@ -18,30 +18,52 @@ const Manager = () => {
     }
   }, []);
 
-  const savePassword = () => {
+  const savePassword = async () => {
     if (
       Inputform.site.length > 3 &&
       Inputform.username.length > 3 &&
       Inputform.password.length > 3
     ) {
-      localStorage.setItem(
-        "passwords",
-        JSON.stringify([...passwordsArray, { ...Inputform, id: uuidv4() }])
-      );
-      console.log([...passwordsArray, { ...Inputform, id: uuidv4() }]);
+      // If any such id exists in the db, delete it
+      await fetch("http://localhost:3000/", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: Inputform.id }),
+      });
+
+      setPasswordsArray([...passwordsArray, { ...Inputform, id: uuidv4() }]);
+      await fetch("http://localhost:3000/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...Inputform, id: uuidv4() }),
+      });
+
+      // Otherwise clear the form and show toast
+      setInputform({ site: "", username: "", password: "" });
+      toast("Password saved!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
     } else {
-      toast.error("Please fill all fields properly");
+      toast("Error: Password not saved!");
     }
   };
 
-  const deletePassword = (id) => {
+  const deletePassword = async (id) => {
     let cf = confirm("Do you really want to delete the password");
     if (cf) {
       setPasswordsArray(passwordsArray.filter((item) => item.id !== id));
-      localStorage.setItem(
-        "passwords",
-        JSON.stringify(passwordsArray.filter((item) => item.id !== id))
-      );
+      await fetch("http://localhost:3000/", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
     }
   };
 
@@ -56,7 +78,10 @@ const Manager = () => {
       progress: undefined,
       theme: "light",
     });
-    setInputform(passwordsArray.filter((item) => item.id === id)[0]);
+    setInputform({
+      ...passwordsArray.filter((item) => item.id === id)[0],
+      id: id,
+    });
     setPasswordsArray(passwordsArray.filter((item) => item.id !== id));
   };
 
